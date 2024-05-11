@@ -38,6 +38,7 @@ async function run() {
 
     // ------------------------------ databases Collections ------------------------------
     const VolunteerCollections = client.db("VolunteerHub").collection("VolunteerCollections");
+    const jobRequestCollections = client.db("VolunteerHub").collection("JobRequestCollections");
 
     // --------------------------- get all VolunteerCollections --------------------------
     app.get("/volunteers-post", async (req, res) => {
@@ -58,6 +59,19 @@ async function run() {
 
   
 
+// ---------------------- post volunteers request --------------------
+app.post("/request-job", async (req, res) => {
+  const request = req.body;
+  const result = await jobRequestCollections.insertOne(request);
+  res.send(result);
+});
+
+
+// --------------------- get all jobs request --------------------
+app.get("/request-job", async (req, res) => {
+  const jobRequestCollectionsData = await jobRequestCollections.find({}).toArray();
+  res.send(jobRequestCollectionsData);
+});
 
 
 

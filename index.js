@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
 
@@ -40,10 +40,23 @@ async function run() {
     const VolunteerCollections = client.db("VolunteerHub").collection("VolunteerCollections");
 
     // --------------------------- get all VolunteerCollections --------------------------
-    app.get("/Volunteers-post", async (req, res) => {
-        const VolunteerCollectionsData = await VolunteerCollections.find().toArray();
-        res.json(VolunteerCollectionsData);
-    })
+    app.get("/volunteers-post", async (req, res) => {
+      const option = {
+          projection: { thumbnail: 1, postTitle: 1, category: 1, volunteersNeeded: 1, deadline: 1, location: 1 }
+      };
+      const VolunteerCollectionsData = await VolunteerCollections.find({}, option).toArray();
+      res.send(VolunteerCollectionsData);
+  });
+
+  // ----------------------------------- get volunteer details --------------------------------
+  app.get("/volunteer-details/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = {_id: new ObjectId(id)}
+    const VolunteerCollectionsData = await VolunteerCollections.findOne(query);
+    res.send(VolunteerCollectionsData);
+});
+
+  
 
 
 

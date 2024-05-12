@@ -1,15 +1,26 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const cookieParser = require("cookie-parser")
+const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
 
 // ------------------- middleware ------------------------
-
-app.use(cors());
+const corsOptions ={
+  origin: [
+    "http://localhost:5173",
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+}
+app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser())
+
+
 
 app.get("/", (req, res) => {
     res.send("VolunteerHub Server Is Running");
@@ -41,7 +52,26 @@ async function run() {
     const jobRequestCollections = client.db("VolunteerHub").collection("JobRequestCollections");
 
 
-
+// ------------------- jwt token generator ----------------
+app.post("/jwt", async(req, res) => {
+  const user = req.body;
+  const token = jwt.sign(user, "Sojib@123",{
+    expiresIn: "7d"
+  })
+  res.cookie("Token", token,{
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite:  process.env.NODE_ENV === "production" ? "none" : "strict"
+  }).send({success: true})
+})
+// -------------------------- jwt refresh token--------------------------
+app.post("/logout", async (req, res) => {
+  res.clearCookie("Token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite:  process.env.NODE_ENV === "production"? "none" : "strict", maxAge:0,
+  }).send({success: true})
+})
   // ----------------------------------- post all VolunteerCollections --------------------------------
 
   app.post("/volunteers-post", async (req, res) =>{
@@ -101,6 +131,8 @@ async function run() {
  // --------------------------- get all VolunteerCollections by email --------------------------
 
   app.get("/volunteers-post/user/:email" , async(req, res) => {
+    const token = req?.cookies?.token;
+    console.log(token);
     const email = req.params.email;
     const VolunteerCollectionsData = await VolunteerCollections.find({ "email": email }).toArray();
     res.send(VolunteerCollectionsData);
@@ -142,6 +174,17 @@ app.get("/request-job/:email", async (req, res) => {
   const email = req.params.email;
   const jobRequestCollectionsData = await jobRequestCollections.find({ "postAdminEmail": email }).toArray();
   res.send(jobRequestCollectionsData);
+})
+// ----------------- job request status change ----------------
+app.patch("/job/:id", async (req, res) => {
+  const id = req.params.id;
+    const filter = { _id: new ObjectId(id) };
+    const status = req.body;
+    const updateStatus = {
+      $set: status
+    };
+    const result = await jobRequestCollections.updateOne(filter, updateStatus);
+    res.send(result);
 })
 
 

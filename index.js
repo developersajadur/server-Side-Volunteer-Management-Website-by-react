@@ -117,7 +117,7 @@ async function run() {
   
 
 // ---------------------- post job request --------------------
-app.post("/request-job", async (req, res) => {
+app.post("/my-request-job", async (req, res) => {
   const request = req.body;
   const result = await jobRequestCollections.insertOne(request);
   res.send(result);
@@ -125,18 +125,24 @@ app.post("/request-job", async (req, res) => {
 
 
 // --------------------- get all jobs request --------------------
-app.get("/request-job", async (req, res) => {
+app.get("/my-request-job", async (req, res) => {
   const jobRequestCollectionsData = await jobRequestCollections.find({}).toArray();
   res.send(jobRequestCollectionsData);
 });
 
 // --------------------- get job request by email --------------------
-app.get("/request-job/:email", async (req, res) => {
+app.get("/my-request-job/:email", async (req, res) => {
   const email = req.params.email;
   const jobRequestCollectionsData = await jobRequestCollections.find({ email: email }).toArray();
   res.send(jobRequestCollectionsData);
 });
 
+// --------------------- get job request by email for post admin --------------------
+app.get("/request-job/:email", async (req, res) => {
+  const email = req.params.email;
+  const jobRequestCollectionsData = await jobRequestCollections.find({ "postAdminEmail": email }).toArray();
+  res.send(jobRequestCollectionsData);
+})
 
 
 

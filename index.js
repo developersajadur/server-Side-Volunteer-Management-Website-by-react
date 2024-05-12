@@ -50,7 +50,7 @@ async function run() {
     res.send(result);
   })
 
-    // --------------------------- get all VolunteerCollections --------------------------
+    // --------------------------- get all VolunteerCollections post --------------------------
     app.get("/volunteers-post", async (req, res) => {
       const option = {
           projection: { thumbnail: 1, postTitle: 1, category: 1, volunteersNeeded: 1, deadline: 1, location: 1 }
@@ -59,6 +59,36 @@ async function run() {
       res.send(VolunteerCollectionsData);
   });
 
+  // -------------------------------- update post ----------------------------
+
+  app.put("/volunteers-post/:id", async (req, res) => {
+    const id = req.params.id;
+    const filter = {_id: new ObjectId(id)}
+    const options = { upsert: true };
+    const updatePost = req.body;
+    const post ={
+      $set:{
+        thumbnail: updatePost.thumbnail,
+        postTitle: updatePost.postTitle,
+        category: updatePost.category,
+        volunteersNeeded: updatePost.volunteersNeeded,
+        deadline: updatePost.deadline,
+        location: updatePost.location,
+        description: updatePost.description
+      }
+    }
+    const result = await VolunteerCollections.updateOne(filter, post, options);
+    res.send(result);
+
+  })
+
+  // -------------------------- get single post ------------------------------
+  app.get("/volunteers-post/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = {_id: new ObjectId(id)}
+    const VolunteerCollectionsData = await VolunteerCollections.findOne(query);
+    res.send(VolunteerCollectionsData);
+ })
   // ---------------------------- delete a Volunteer post ----------------------------
 
 
@@ -70,9 +100,9 @@ async function run() {
   });
  // --------------------------- get all VolunteerCollections by email --------------------------
 
-  app.get("/volunteers-post/:email" , async(req, res) => {
+  app.get("/volunteers-post/user/:email" , async(req, res) => {
     const email = req.params.email;
-    const VolunteerCollectionsData = await VolunteerCollections.find({ email: email }).toArray();
+    const VolunteerCollectionsData = await VolunteerCollections.find({ "email": email }).toArray();
     res.send(VolunteerCollectionsData);
   })
 
@@ -86,7 +116,7 @@ async function run() {
 
   
 
-// ---------------------- post volunteers request --------------------
+// ---------------------- post job request --------------------
 app.post("/request-job", async (req, res) => {
   const request = req.body;
   const result = await jobRequestCollections.insertOne(request);

@@ -40,6 +40,16 @@ async function run() {
     const VolunteerCollections = client.db("VolunteerHub").collection("VolunteerCollections");
     const jobRequestCollections = client.db("VolunteerHub").collection("JobRequestCollections");
 
+
+
+  // ----------------------------------- post all VolunteerCollections --------------------------------
+
+  app.post("/volunteers-post", async (req, res) =>{
+    const VolunteerCollectionsData = req.body;
+    const result = await VolunteerCollections.insertOne(VolunteerCollectionsData);
+    res.send(result);
+  })
+
     // --------------------------- get all VolunteerCollections --------------------------
     app.get("/volunteers-post", async (req, res) => {
       const option = {
@@ -48,6 +58,23 @@ async function run() {
       const VolunteerCollectionsData = await VolunteerCollections.find({}, option).toArray();
       res.send(VolunteerCollectionsData);
   });
+
+  // ---------------------------- delete a Volunteer post ----------------------------
+
+
+  app.delete("/volunteers-post/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = {_id: new ObjectId(id)}
+    const result = await VolunteerCollections.deleteOne(query);
+    res.send(result);
+  });
+ // --------------------------- get all VolunteerCollections by email --------------------------
+
+  app.get("/volunteers-post/:email" , async(req, res) => {
+    const email = req.params.email;
+    const VolunteerCollectionsData = await VolunteerCollections.find({ email: email }).toArray();
+    res.send(VolunteerCollectionsData);
+  })
 
   // ----------------------------------- get volunteer details --------------------------------
   app.get("/volunteer-details/:id", async (req, res) => {
@@ -72,6 +99,15 @@ app.get("/request-job", async (req, res) => {
   const jobRequestCollectionsData = await jobRequestCollections.find({}).toArray();
   res.send(jobRequestCollectionsData);
 });
+
+// --------------------- get job request by email --------------------
+app.get("/request-job/:email", async (req, res) => {
+  const email = req.params.email;
+  const jobRequestCollectionsData = await jobRequestCollections.find({ email: email }).toArray();
+  res.send(jobRequestCollectionsData);
+});
+
+
 
 
 
